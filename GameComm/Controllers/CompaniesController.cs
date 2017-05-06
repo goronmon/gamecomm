@@ -7,22 +7,22 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using GameComm.Data;
 using GameComm.Models;
+using GameComm.Services;
 
 namespace GameComm.Controllers
 {
     public class CompaniesController : Controller
     {
-        private readonly ApplicationDbContext _context;
-
-        public CompaniesController(ApplicationDbContext context)
+        private IBacklogService _backlogService;
+        public CompaniesController(IBacklogService backlogService)
         {
-            _context = context;    
+            _backlogService = backlogService;    
         }
 
         // GET: Companies
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Companies.ToListAsync());
+            return View(await _backlogService.GetCompanies().ToListAsync());
         }
 
         // GET: Companies/Details/5
@@ -33,7 +33,7 @@ namespace GameComm.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Companies
+            var company = await _backlogService.GetCompanies()
                 .SingleOrDefaultAsync(m => m.CompanyId == id);
             if (company == null)
             {
