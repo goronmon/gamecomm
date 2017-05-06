@@ -1,2 +1,3 @@
 GameComm/bin/
-GameComm/obj
+GameComm/obj/
+.vs/
