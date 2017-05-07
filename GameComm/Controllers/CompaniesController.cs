@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using GameComm.Data;
 using GameComm.Models;
 using GameComm.Services;
+using GameComm.Models.BacklogViewModels;
 
 namespace GameComm.Controllers
 {
@@ -54,12 +55,11 @@ namespace GameComm.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CompanyId,Title,LastModified,CreateDate,IsActive,IsDeleted")] Company company)
+        public async Task<IActionResult> Create([Bind("CompanyId,Title,IsActive,IsDeleted")] Company company)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(company);
-                await _context.SaveChangesAsync();
+                await _backlogService.AddCompany(company);
                 return RedirectToAction("Index");
             }
             return View(company);
@@ -73,7 +73,7 @@ namespace GameComm.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Companies.SingleOrDefaultAsync(m => m.CompanyId == id);
+            var company = await _backlogService.GetCompany(id);
             if (company == null)
             {
                 return NotFound();
@@ -86,19 +86,19 @@ namespace GameComm.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,Title,LastModified,CreateDate,IsActive,IsDeleted")] Company company)
+        public async Task<IActionResult> Edit(int id, [Bind("CompanyId,Title,LastModified,CreateDate,IsActive,IsDeleted")] CompanyViewModel companyVM)
         {
-            if (id != company.CompanyId)
+            if (id != companyVM.CompanyId)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+
                 try
                 {
-                    _context.Update(company);
-                    await _context.SaveChangesAsync();
+                    await _backlogService.UpdateCompany(company);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,8 +124,7 @@ namespace GameComm.Controllers
                 return NotFound();
             }
 
-            var company = await _context.Companies
-                .SingleOrDefaultAsync(m => m.CompanyId == id);
+            var company = await _backlogService.GetCompany(id);
             if (company == null)
             {
                 return NotFound();
@@ -139,15 +138,13 @@ namespace GameComm.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var company = await _context.Companies.SingleOrDefaultAsync(m => m.CompanyId == id);
-            _context.Companies.Remove(company);
-            await _context.SaveChangesAsync();
+            await _backlogService.DeleteCompany(id);
             return RedirectToAction("Index");
         }
 
         private bool CompanyExists(int id)
         {
-            return _context.Companies.Any(e => e.CompanyId == id);
+            return _backlogService.CompanyExists(id);
         }
     }
 }
